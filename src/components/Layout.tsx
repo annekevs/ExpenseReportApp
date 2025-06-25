@@ -4,15 +4,17 @@ import {
   X,
   Home,
   FileText,
-  PlusCircle,
-  BarChart3,
+  Upload,
   Users,
+  CreditCard,
+  BarChart3,
   Settings,
   Bell,
   LogOut,
   ChevronDown,
-  CheckCircle,
   User as UserIcon,
+  Building,
+  CheckCircle,
 } from "lucide-react";
 import { currentUser, notifications } from "../data/mockData";
 
@@ -31,27 +33,14 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { id: "dashboard", label: "Tableau de bord", icon: Home },
-  { id: "expenses", label: "Notes de frais", icon: FileText },
-  { id: "create-expense", label: "Nouvelle note", icon: PlusCircle },
-  {
-    id: "approval-queue",
-    label: "File de validation",
-    icon: CheckCircle,
-    roles: ["manager", "finance"],
-  },
-  { id: "reports", label: "Rapports", icon: BarChart3 },
-  {
-    id: "users",
-    label: "Utilisateurs",
-    icon: Users,
-    roles: ["manager", "finance"],
-  },
-  {
-    id: "settings",
-    label: "Paramètres",
-    icon: Settings,
-    roles: ["manager", "finance"],
-  },
+  { id: "invoices", label: "Factures", icon: FileText },
+  { id: "upload", label: "Déposer facture", icon: Upload, roles: ["supplier"] },
+  { id: "validation", label: "Validation", icon: CheckCircle, roles: ["internal_requester", "manager", "finance"] },
+  { id: "payments", label: "Paiements", icon: CreditCard, roles: ["finance"] },
+  { id: "suppliers", label: "Fournisseurs", icon: Building, roles: ["internal_requester", "manager", "finance", "admin"] },
+  { id: "reports", label: "Rapports", icon: BarChart3, roles: ["manager", "finance", "admin"] },
+  { id: "users", label: "Utilisateurs", icon: Users, roles: ["admin"] },
+  { id: "settings", label: "Paramètres", icon: Settings, roles: ["admin"] },
 ];
 
 export default function Layout({
@@ -78,6 +67,17 @@ export default function Layout({
     setIsMobileMenuOpen(false);
   };
 
+  const getRoleLabel = (role: string) => {
+    const roleMap = {
+      supplier: 'Fournisseur',
+      internal_requester: 'Demandeur interne',
+      manager: 'Manager',
+      finance: 'Finance',
+      admin: 'Administrateur'
+    };
+    return roleMap[role as keyof typeof roleMap] || role;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
@@ -92,9 +92,9 @@ export default function Layout({
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
               <div className="flex-shrink-0 flex items-center ml-4 lg:ml-0">
-                <FileText className="h-8 w-8 text-blue-600" />
+                <CreditCard className="h-8 w-8 text-blue-600" />
                 <span className="ml-2 text-xl font-bold text-gray-900 hidden sm:block">
-                  ExpenseFlow
+                  InvoiceFlow
                 </span>
               </div>
             </div>
@@ -203,11 +203,7 @@ export default function Layout({
                         {currentUser.email}
                       </p>
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
-                        {currentUser.role === "employee"
-                          ? "Employé"
-                          : currentUser.role === "manager"
-                          ? "Manager"
-                          : "Finance"}
+                        {getRoleLabel(currentUser.role)}
                       </span>
                     </div>
                     <div className="py-1">

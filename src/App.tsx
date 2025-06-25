@@ -1,98 +1,94 @@
 import React, { useState } from 'react';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
-import ExpenseList from './components/ExpenseList';
-import ExpenseForm from './components/ExpenseForm';
-import ExpenseDetail from './components/ExpenseDetail';
-import Reports from './components/Reports';
-import Profile from './components/Profile';
-import Notifications from './components/Notifications';
-import ApprovalQueue from './components/ApprovalQueue';
-import { ExpenseReport } from './types';
+import InvoiceList from './components/InvoiceList';
+import { Invoice } from './types';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [selectedExpense, setSelectedExpense] = useState<ExpenseReport | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   const handlePageChange = (page: string) => {
     setCurrentPage(page);
-    setSelectedExpense(null);
+    setSelectedInvoice(null);
   };
 
-  const handleViewExpense = (expense: ExpenseReport) => {
-    setSelectedExpense(expense);
-    setCurrentPage('expense-detail');
+  const handleViewInvoice = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setCurrentPage('invoice-detail');
   };
 
-  const handleCreateExpense = () => {
-    setSelectedExpense(null);
-    setCurrentPage('create-expense');
-  };
-
-  const handleEditExpense = (expense: ExpenseReport) => {
-    setSelectedExpense(expense);
-    setCurrentPage('edit-expense');
-  };
-
-  const handleBackToExpenses = () => {
-    setCurrentPage('expenses');
-    setSelectedExpense(null);
+  const handleEditInvoice = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setCurrentPage('edit-invoice');
   };
 
   const renderContent = () => {
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard />;
-      case 'expenses':
+      case 'invoices':
         return (
-          <ExpenseList
-            onViewExpense={handleViewExpense}
-            onCreateExpense={handleCreateExpense}
-            onEditExpense={handleEditExpense}
+          <InvoiceList
+            onViewInvoice={handleViewInvoice}
+            onEditInvoice={handleEditInvoice}
           />
         );
-      case 'create-expense':
+      case 'upload':
         return (
-          <ExpenseForm
-            onBack={handleBackToExpenses}
-          />
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Déposer une facture
+            </h2>
+            <p className="text-gray-600">
+              Module de dépôt de factures en cours de développement
+            </p>
+          </div>
         );
-      case 'edit-expense':
-        return selectedExpense ? (
-          <ExpenseForm
-            expense={selectedExpense}
-            isEditing={true}
-            onBack={handleBackToExpenses}
-          />
-        ) : (
-          <ExpenseList
-            onViewExpense={handleViewExpense}
-            onCreateExpense={handleCreateExpense}
-            onEditExpense={handleEditExpense}
-          />
+      case 'validation':
+        return (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Validation des factures
+            </h2>
+            <p className="text-gray-600">
+              Module de validation en cours de développement
+            </p>
+          </div>
         );
-      case 'expense-detail':
-        return selectedExpense ? (
-          <ExpenseDetail
-            expense={selectedExpense}
-            onBack={handleBackToExpenses}
-            onEdit={() => handleEditExpense(selectedExpense)}
-          />
-        ) : (
-          <ExpenseList
-            onViewExpense={handleViewExpense}
-            onCreateExpense={handleCreateExpense}
-            onEditExpense={handleEditExpense}
-          />
+      case 'payments':
+        return (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Gestion des paiements
+            </h2>
+            <p className="text-gray-600">
+              Module de paiements en cours de développement
+            </p>
+          </div>
+        );
+      case 'suppliers':
+        return (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Gestion des fournisseurs
+            </h2>
+            <p className="text-gray-600">
+              Module de gestion des fournisseurs en cours de développement
+            </p>
+          </div>
         );
       case 'reports':
-        return <Reports />;
-      case 'profile':
-        return <Profile />;
-      case 'notifications':
-        return <Notifications />;
-      case 'approval-queue':
-        return <ApprovalQueue onViewExpense={handleViewExpense} />;
+        return (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Rapports et analyses
+            </h2>
+            <p className="text-gray-600">
+              Module de reporting en cours de développement
+            </p>
+          </div>
+        );
       case 'users':
         return (
           <div className="text-center py-12">
@@ -112,6 +108,17 @@ function App() {
             </h2>
             <p className="text-gray-600">
               Configuration de l'application en cours de développement
+            </p>
+          </div>
+        );
+      case 'profile':
+        return (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Mon profil
+            </h2>
+            <p className="text-gray-600">
+              Gestion du profil utilisateur en cours de développement
             </p>
           </div>
         );

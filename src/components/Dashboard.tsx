@@ -4,37 +4,49 @@ import {
   Clock,
   DollarSign,
   FileText,
-  Users,
+  AlertTriangle,
   Calendar,
   ArrowUpRight,
   ArrowDownRight,
   CheckCircle,
-  AlertCircle
+  Users,
+  CreditCard,
+  Building
 } from 'lucide-react';
-import { dashboardStats, budgets, mockExpenseReports } from '../data/mockData';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { dashboardStats, invoices, suppliers } from '../data/mockData';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
 export default function Dashboard() {
-  const recentExpenses = mockExpenseReports.slice(0, 5);
+  const recentInvoices = invoices.slice(0, 5);
   
   const monthlyData = [
-    { month: 'Jan', amount: 2400 },
-    { month: 'Fév', amount: 2851 },
-    { month: 'Mar', amount: 2200 },
-    { month: 'Avr', amount: 2780 },
-    { month: 'Mai', amount: 3100 },
-    { month: 'Jun', amount: 2900 }
+    { month: 'Août', amount: 45200, count: 38 },
+    { month: 'Sept', amount: 52800, count: 42 },
+    { month: 'Oct', amount: 48600, count: 39 },
+    { month: 'Nov', amount: 61200, count: 48 },
+    { month: 'Déc', amount: 58900, count: 45 },
+    { month: 'Jan', amount: 67400, count: 52 }
   ];
 
-  const categoryData = budgets.map(budget => ({
-    name: budget.category,
-    value: budget.spent,
-    percentage: (budget.spent / budget.allocated) * 100
-  }));
+  const statusData = [
+    { name: 'Reçues', value: 15, color: '#F59E0B' },
+    { name: 'Validées', value: 28, color: '#3B82F6' },
+    { name: 'Approuvées', value: 35, color: '#10B981' },
+    { name: 'Payées', value: 78, color: '#06B6D4' }
+  ];
 
-  const StatCard = ({ title, value, subtitle, icon: Icon, trend, trendValue }: any) => (
+  const processingTimeData = [
+    { month: 'Août', time: 3.8 },
+    { month: 'Sept', time: 3.2 },
+    { month: 'Oct', time: 2.9 },
+    { month: 'Nov', time: 3.1 },
+    { month: 'Déc', time: 2.8 },
+    { month: 'Jan', time: 3.2 }
+  ];
+
+  const StatCard = ({ title, value, subtitle, icon: Icon, trend, trendValue, color = "blue" }: any) => (
     <div className="card">
       <div className="flex items-center justify-between">
         <div>
@@ -43,8 +55,8 @@ export default function Dashboard() {
           {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
         </div>
         <div className="flex flex-col items-end">
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <Icon className="h-6 w-6 text-blue-600" />
+          <div className={`p-3 bg-${color}-50 rounded-lg`}>
+            <Icon className={`h-6 w-6 text-${color}-600`} />
           </div>
           {trend && (
             <div className={`flex items-center mt-2 text-sm ${
@@ -69,7 +81,7 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-          <p className="text-gray-600 mt-1">Vue d'ensemble de vos notes de frais</p>
+          <p className="text-gray-600 mt-1">Vue d'ensemble de la gestion des factures fournisseurs</p>
         </div>
         <div className="mt-4 sm:mt-0">
           <div className="flex items-center text-sm text-gray-500">
@@ -82,48 +94,94 @@ export default function Dashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total des frais"
-          value={`${dashboardStats.totalExpenses.toLocaleString('fr-FR')}€`}
+          title="Total factures"
+          value={dashboardStats.totalInvoices}
+          subtitle="Ce mois-ci"
+          icon={FileText}
+          trend="up"
+          trendValue="+15%"
+          color="blue"
+        />
+        <StatCard
+          title="En attente validation"
+          value={dashboardStats.pendingValidation}
+          subtitle="À traiter"
+          icon={Clock}
+          trend="down"
+          trendValue="-8%"
+          color="orange"
+        />
+        <StatCard
+          title="Montant total"
+          value={`${dashboardStats.totalAmount.toLocaleString('fr-FR')}€`}
           subtitle="Ce mois-ci"
           icon={DollarSign}
           trend="up"
-          trendValue="+12%"
+          trendValue="+22%"
+          color="green"
         />
         <StatCard
-          title="En attente"
-          value={dashboardStats.pendingApprovals}
-          subtitle="Notes à approuver"
-          icon={Clock}
+          title="En retard"
+          value={dashboardStats.overdueInvoices}
+          subtitle="Échéances dépassées"
+          icon={AlertTriangle}
           trend="down"
-          trendValue="-5%"
+          trendValue="-2"
+          color="red"
         />
-        <StatCard
-          title="Dépenses mensuelles"
-          value={`${dashboardStats.monthlySpent.toLocaleString('fr-FR')}€`}
-          subtitle="Budget alloué"
-          icon={TrendingUp}
-          trend="up"
-          trendValue="+8%"
-        />
-        <StatCard
-          title="Temps de traitement"
-          value={`${dashboardStats.averageProcessingTime}j`}
-          subtitle="Délai moyen"
-          icon={FileText}
-          trend="down"
-          trendValue="-15%"
-        />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="card bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Validation en attente</h3>
+              <p className="text-blue-100 mt-1">{dashboardStats.pendingValidation} factures à valider</p>
+            </div>
+            <CheckCircle className="h-8 w-8 text-blue-200" />
+          </div>
+          <button className="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+            Voir les factures
+          </button>
+        </div>
+
+        <div className="card bg-gradient-to-r from-green-500 to-green-600 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Paiements programmés</h3>
+              <p className="text-green-100 mt-1">{dashboardStats.pendingPayment} paiements à effectuer</p>
+            </div>
+            <CreditCard className="h-8 w-8 text-green-200" />
+          </div>
+          <button className="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+            Gérer les paiements
+          </button>
+        </div>
+
+        <div className="card bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Fournisseurs actifs</h3>
+              <p className="text-purple-100 mt-1">{dashboardStats.supplierCount} fournisseurs</p>
+            </div>
+            <Building className="h-8 w-8 text-purple-200" />
+          </div>
+          <button className="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+            Gérer les fournisseurs
+          </button>
+        </div>
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly Expenses Chart */}
+        {/* Monthly Volume Chart */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Évolution mensuelle</h3>
+            <h3 className="text-lg font-medium text-gray-900">Volume mensuel</h3>
             <div className="flex items-center text-sm text-green-600">
               <TrendingUp className="h-4 w-4 mr-1" />
-              +12% vs mois dernier
+              +22% vs mois dernier
             </div>
           </div>
           <div className="h-64">
@@ -132,26 +190,31 @@ export default function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`${value}€`, 'Montant']} />
+                <Tooltip 
+                  formatter={(value: any, name: string) => [
+                    name === 'amount' ? `${value.toLocaleString('fr-FR')}€` : value,
+                    name === 'amount' ? 'Montant' : 'Nombre'
+                  ]}
+                />
                 <Bar dataKey="amount" fill="#3B82F6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Category Distribution */}
+        {/* Status Distribution */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Répartition par catégorie</h3>
+            <h3 className="text-lg font-medium text-gray-900">Répartition par statut</h3>
             <div className="text-sm text-gray-500">
-              Utilisation: {dashboardStats.budgetUtilization}%
+              Total: {statusData.reduce((sum, item) => sum + item.value, 0)} factures
             </div>
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={categoryData}
+                  data={statusData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -159,92 +222,59 @@ export default function Dashboard() {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {statusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [`${value}€`, 'Dépensé']} />
+                <Tooltip formatter={(value) => [`${value}`, 'Factures']} />
               </PieChart>
             </ResponsiveContainer>
           </div>
           <div className="flex flex-wrap gap-2 mt-4">
-            {categoryData.map((item, index) => (
+            {statusData.map((item, index) => (
               <div key={item.name} className="flex items-center text-sm">
                 <div
                   className="w-3 h-3 rounded-full mr-2"
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  style={{ backgroundColor: item.color }}
                 />
-                <span className="text-gray-600">{item.name}</span>
+                <span className="text-gray-600">{item.name} ({item.value})</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Budget Overview */}
+      {/* Processing Time Trend */}
       <div className="card">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium text-gray-900">Suivi budgétaire</h3>
-          <button className="text-sm text-blue-600 hover:text-blue-500">
-            Voir détails
-          </button>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium text-gray-900">Temps de traitement moyen</h3>
+          <div className="text-sm text-gray-500">
+            Objectif: 3 jours
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {budgets.map((budget) => {
-            const utilizationPercentage = (budget.spent / budget.allocated) * 100;
-            const isOverBudget = utilizationPercentage > 100;
-            const isNearLimit = utilizationPercentage > 80;
-
-            return (
-              <div key={budget.category} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-900">{budget.category}</h4>
-                  {isOverBudget ? (
-                    <AlertCircle className="h-4 w-4 text-red-500" />
-                  ) : (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Dépensé</span>
-                    <span className="font-medium">{budget.spent}€</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Budget</span>
-                    <span className="font-medium">{budget.allocated}€</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        isOverBudget ? 'bg-red-500' : 
-                        isNearLimit ? 'bg-yellow-500' : 'bg-green-500'
-                      }`}
-                      style={{ width: `${Math.min(utilizationPercentage, 100)}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className={`${
-                      isOverBudget ? 'text-red-600' : 
-                      isNearLimit ? 'text-yellow-600' : 'text-green-600'
-                    }`}>
-                      {utilizationPercentage.toFixed(1)}% utilisé
-                    </span>
-                    <span className="text-gray-500">
-                      {budget.remaining < 0 ? 'Dépassé' : `${budget.remaining}€ restant`}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={processingTimeData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis label={{ value: 'Jours', angle: -90, position: 'insideLeft' }} />
+              <Tooltip formatter={(value) => [`${value}j`, 'Temps de traitement']} />
+              <Line 
+                type="monotone" 
+                dataKey="time" 
+                stroke="#3B82F6" 
+                strokeWidth={2}
+                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Recent Expenses */}
+      {/* Recent Invoices */}
       <div className="card">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium text-gray-900">Notes récentes</h3>
+          <h3 className="text-lg font-medium text-gray-900">Factures récentes</h3>
           <button className="text-sm text-blue-600 hover:text-blue-500">
             Voir toutes
           </button>
@@ -255,7 +285,10 @@ export default function Dashboard() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Note de frais
+                    Facture
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fournisseur
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Montant
@@ -264,41 +297,46 @@ export default function Dashboard() {
                     Statut
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
+                    Échéance
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {recentExpenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-gray-50">
+                {recentInvoices.map((invoice) => (
+                  <tr key={invoice.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {expense.title}
+                          {invoice.number}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {expense.description}
+                          {invoice.description}
                         </div>
                       </div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {invoice.supplierName}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      {expense.totalAmount.toLocaleString('fr-FR')}€
+                      {invoice.amountTTC.toLocaleString('fr-FR')}€
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`status-badge ${
-                        expense.status === 'submitted' ? 'status-pending' :
-                        expense.status === 'approved' ? 'status-approved' :
-                        expense.status === 'rejected' ? 'status-rejected' :
-                        'status-paid'
+                        invoice.status === 'received' ? 'status-pending' :
+                        invoice.status === 'validated' ? 'bg-blue-100 text-blue-800' :
+                        invoice.status === 'approved' ? 'status-approved' :
+                        invoice.status === 'paid' ? 'status-paid' :
+                        'status-rejected'
                       }`}>
-                        {expense.status === 'submitted' ? 'En attente' :
-                         expense.status === 'approved' ? 'Approuvé' :
-                         expense.status === 'rejected' ? 'Rejeté' :
-                         'Payé'}
+                        {invoice.status === 'received' ? 'Reçue' :
+                         invoice.status === 'validated' ? 'Validée' :
+                         invoice.status === 'approved' ? 'Approuvée' :
+                         invoice.status === 'paid' ? 'Payée' :
+                         'Rejetée'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(expense.createdAt).toLocaleDateString('fr-FR')}
+                      {new Date(invoice.dueDate).toLocaleDateString('fr-FR')}
                     </td>
                   </tr>
                 ))}

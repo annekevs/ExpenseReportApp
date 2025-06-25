@@ -1,386 +1,300 @@
-import { User, ExpenseReport, ExpenseCategory, Budget, DashboardStats, NotificationItem, Receipt, OCRData } from '../types';
+import { User, Supplier, Invoice, DashboardStats, NotificationItem, OCRData, InvoiceDocument } from '../types';
 
 export const currentUser: User = {
   id: '1',
-  name: 'Marie Dubois',
-  email: 'marie.dubois@company.com',
-  role: 'employee',
-  department: 'Marketing',
+  name: 'Sophie Martin',
+  email: 'sophie.martin@company.com',
+  role: 'finance',
+  department: 'Finance',
   avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400'
 };
 
-export const expenseCategories: ExpenseCategory[] = [
+export const suppliers: Supplier[] = [
   {
     id: '1',
-    name: 'Transport',
-    icon: 'Car',
-    maxAmount: 500,
-    requiresReceipt: true,
-    color: 'bg-blue-500',
-    ocrKeywords: ['train', 'taxi', 'uber', 'transport', 'sncf', 'metro', 'bus']
+    name: 'ABC SARL',
+    siret: '12345678901234',
+    address: '123 Rue de la Paix, 75001 Paris',
+    email: 'contact@abc-sarl.fr',
+    phone: '+33 1 23 45 67 89',
+    contactPerson: 'Jean Dupont',
+    paymentTerms: 30,
+    paymentMethod: 'virement',
+    status: 'active',
+    createdAt: '2023-01-15T00:00:00Z'
   },
   {
     id: '2',
-    name: 'Hébergement',
-    icon: 'Building2',
-    maxAmount: 300,
-    requiresReceipt: true,
-    color: 'bg-green-500',
-    ocrKeywords: ['hotel', 'hébergement', 'nuit', 'chambre', 'booking', 'airbnb']
+    name: 'XYZ Technologies SAS',
+    siret: '98765432109876',
+    address: '456 Avenue des Champs, 69002 Lyon',
+    email: 'facturation@xyz-tech.fr',
+    phone: '+33 4 78 90 12 34',
+    contactPerson: 'Marie Dubois',
+    paymentTerms: 45,
+    paymentMethod: 'virement',
+    status: 'active',
+    createdAt: '2023-02-20T00:00:00Z'
   },
   {
     id: '3',
-    name: 'Repas',
-    icon: 'UtensilsCrossed',
-    maxAmount: 75,
-    requiresReceipt: true,
-    color: 'bg-orange-500',
-    ocrKeywords: ['restaurant', 'repas', 'déjeuner', 'dîner', 'café', 'brasserie']
-  },
-  {
-    id: '4',
-    name: 'Fournitures',
-    icon: 'Package',
-    maxAmount: 200,
-    requiresReceipt: true,
-    color: 'bg-purple-500',
-    ocrKeywords: ['fournitures', 'bureau', 'papeterie', 'matériel', 'ordinateur']
-  },
-  {
-    id: '5',
-    name: 'Frais kilométriques',
-    icon: 'MapPin',
-    maxAmount: 1000,
-    requiresReceipt: false,
-    color: 'bg-red-500',
-    ocrKeywords: ['essence', 'carburant', 'péage', 'parking']
-  },
-  {
-    id: '6',
-    name: 'Communication',
-    icon: 'Phone',
-    maxAmount: 150,
-    requiresReceipt: true,
-    color: 'bg-indigo-500',
-    ocrKeywords: ['téléphone', 'internet', 'mobile', 'communication', 'forfait']
+    name: 'DEF Services EURL',
+    siret: '11223344556677',
+    address: '789 Boulevard du Commerce, 13001 Marseille',
+    email: 'admin@def-services.fr',
+    phone: '+33 4 91 23 45 67',
+    contactPerson: 'Pierre Leroy',
+    paymentTerms: 30,
+    paymentMethod: 'cheque',
+    status: 'active',
+    createdAt: '2023-03-10T00:00:00Z'
   }
 ];
 
-// Mock OCR data pour différents types de factures
 export const mockOCRData: OCRData[] = [
   {
-    merchantName: 'SNCF Connect',
-    merchantAddress: '2 Place aux Étoiles, 93200 Saint-Denis',
-    date: '2024-01-15',
-    amount: 156.00,
+    supplierName: 'ABC SARL',
+    supplierSiret: '12345678901234',
+    invoiceNumber: 'F2025001',
+    issueDate: '2025-01-15',
+    dueDate: '2025-02-14',
+    amountHT: 2916.67,
+    amountTTC: 3500.00,
+    vatAmount: 583.33,
     currency: 'EUR',
-    category: 'Transport',
-    taxAmount: 15.60,
-    paymentMethod: 'Carte bancaire',
     confidence: 0.95,
-    extractedText: 'SNCF CONNECT\nBillet de train\nParis Gare de Lyon - Lyon Part-Dieu\n15/01/2024 - 08:30\nTarif: 156,00 EUR\nTVA: 15,60 EUR'
+    extractedText: 'ABC SARL\nSIRET: 12345678901234\nFacture F2025001\nDate: 15/01/2025\nÉchéance: 14/02/2025\nMontant HT: 2 916,67 €\nTVA 20%: 583,33 €\nMontant TTC: 3 500,00 €'
   },
   {
-    merchantName: 'Hotel Mercure Lyon Centre',
-    merchantAddress: '50 Cours de la République, 69002 Lyon',
-    date: '2024-01-10',
-    amount: 140.00,
+    supplierName: 'XYZ Technologies SAS',
+    supplierSiret: '98765432109876',
+    invoiceNumber: 'XYZ-2025-0042',
+    issueDate: '2025-01-10',
+    dueDate: '2025-02-24',
+    amountHT: 6500.00,
+    amountTTC: 7800.00,
+    vatAmount: 1300.00,
     currency: 'EUR',
-    category: 'Hébergement',
-    taxAmount: 14.00,
-    paymentMethod: 'Carte bancaire',
     confidence: 0.92,
-    extractedText: 'HOTEL MERCURE LYON CENTRE\nChambre Standard - 1 nuit\n10/01/2024\nMontant: 140,00 EUR\nTaxe de séjour: 2,50 EUR\nTVA: 14,00 EUR'
-  },
-  {
-    merchantName: 'Le Bistrot Parisien',
-    merchantAddress: '15 Rue de Rivoli, 75001 Paris',
-    date: '2024-01-15',
-    amount: 85.50,
-    currency: 'EUR',
-    category: 'Repas',
-    taxAmount: 8.55,
-    paymentMethod: 'Carte bancaire',
-    confidence: 0.88,
-    extractedText: 'LE BISTROT PARISIEN\nDéjeuner d\'affaires\n15/01/2024 - 13:30\nMenu: 65,00 EUR\nBoissons: 20,50 EUR\nTVA: 8,55 EUR\nTotal: 85,50 EUR'
+    extractedText: 'XYZ Technologies SAS\nSIRET: 98765432109876\nFacture XYZ-2025-0042\nDate: 10/01/2025\nÉchéance: 24/02/2025\nMontant HT: 6 500,00 €\nTVA 20%: 1 300,00 €\nMontant TTC: 7 800,00 €'
   }
 ];
 
-export const mockReceipts: Receipt[] = [
+export const mockDocuments: InvoiceDocument[] = [
   {
     id: '1',
-    fileName: 'facture_sncf_20240115.pdf',
+    fileName: 'facture_abc_f2025001.pdf',
     fileType: 'application/pdf',
     fileSize: 245760,
-    uploadedAt: '2024-01-15T09:15:00Z',
-    fileUrl: 'https://example.com/receipts/facture_sncf_20240115.pdf',
+    fileUrl: 'https://example.com/invoices/facture_abc_f2025001.pdf',
     thumbnailUrl: 'https://images.pexels.com/photos/4386321/pexels-photo-4386321.jpeg?auto=compress&cs=tinysrgb&w=400',
-    ocrData: mockOCRData[0],
-    ocrStatus: 'completed'
+    uploadedAt: '2025-01-15T09:15:00Z',
+    uploadedBy: 'ABC SARL',
+    documentType: 'invoice'
   },
   {
     id: '2',
-    fileName: 'hotel_mercure_lyon.jpg',
-    fileType: 'image/jpeg',
-    fileSize: 1024000,
-    uploadedAt: '2024-01-10T18:30:00Z',
-    fileUrl: 'https://example.com/receipts/hotel_mercure_lyon.jpg',
-    thumbnailUrl: 'https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=400',
-    ocrData: mockOCRData[1],
-    ocrStatus: 'completed'
-  },
-  {
-    id: '3',
-    fileName: 'restaurant_paris.jpg',
-    fileType: 'image/jpeg',
-    fileSize: 856000,
-    uploadedAt: '2024-01-15T14:45:00Z',
-    fileUrl: 'https://example.com/receipts/restaurant_paris.jpg',
-    thumbnailUrl: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=400',
-    ocrData: mockOCRData[2],
-    ocrStatus: 'completed'
+    fileName: 'facture_xyz_2025_0042.pdf',
+    fileType: 'application/pdf',
+    fileSize: 189000,
+    fileUrl: 'https://example.com/invoices/facture_xyz_2025_0042.pdf',
+    thumbnailUrl: 'https://images.pexels.com/photos/4386321/pexels-photo-4386321.jpeg?auto=compress&cs=tinysrgb&w=400',
+    uploadedAt: '2025-01-10T14:30:00Z',
+    uploadedBy: 'XYZ Technologies SAS',
+    documentType: 'invoice'
   }
 ];
 
-export const mockExpenseReports: ExpenseReport[] = [
+export const invoices: Invoice[] = [
   {
     id: '1',
-    title: 'Mission client Paris',
-    description: 'Déplacement chez le client pour présentation commerciale',
-    userId: '1',
-    userName: 'Marie Dubois',
-    totalAmount: 287.50,
+    number: 'F2025001',
+    supplierId: '1',
+    supplierName: 'ABC SARL',
+    amount: 2916.67,
+    amountTTC: 3500.00,
     currency: 'EUR',
-    status: 'submitted',
-    createdAt: '2024-01-15T09:00:00Z',
-    submittedAt: '2024-01-15T14:30:00Z',
-    expenses: [
-      {
-        id: '1',
-        category: expenseCategories[0],
-        description: 'Train Paris A/R',
-        amount: 156.00,
-        currency: 'EUR',
-        date: '2024-01-15',
-        location: 'Paris',
-        receipt: mockReceipts[0],
-        ocrData: mockOCRData[0]
-      },
-      {
-        id: '2',
-        category: expenseCategories[2],
-        description: 'Déjeuner client',
-        amount: 85.50,
-        currency: 'EUR',
-        date: '2024-01-15',
-        location: 'Paris',
-        receipt: mockReceipts[2],
-        ocrData: mockOCRData[2]
-      },
-      {
-        id: '3',
-        category: expenseCategories[0],
-        description: 'Taxi gare - client',
-        amount: 46.00,
-        currency: 'EUR',
-        date: '2024-01-15',
-        location: 'Paris',
-        receipt: {
-          id: '4',
-          fileName: 'taxi_paris.jpg',
-          fileType: 'image/jpeg',
-          fileSize: 512000,
-          uploadedAt: '2024-01-15T16:00:00Z',
-          fileUrl: 'https://example.com/receipts/taxi_paris.jpg',
-          thumbnailUrl: 'https://images.pexels.com/photos/449965/pexels-photo-449965.jpeg?auto=compress&cs=tinysrgb&w=400',
-          ocrStatus: 'completed',
-          ocrData: {
-            merchantName: 'Taxi Parisien',
-            date: '2024-01-15',
-            amount: 46.00,
-            currency: 'EUR',
-            category: 'Transport',
-            confidence: 0.85,
-            extractedText: 'TAXI PARISIEN\nCourse du 15/01/2024\nGare de Lyon - 15 Rue de la Paix\nMontant: 46,00 EUR'
-          }
-        }
-      }
-    ],
-    receipts: [mockReceipts[0], mockReceipts[2]],
-    approvals: [],
-    comments: []
-  },
-  {
-    id: '2',
-    title: 'Salon professionnel Lyon',
-    description: 'Participation au salon TechExpo 2024',
-    userId: '1',
-    userName: 'Marie Dubois',
-    totalAmount: 542.30,
-    currency: 'EUR',
+    issueDate: '2025-01-15',
+    dueDate: '2025-02-14',
+    receivedDate: '2025-01-15',
+    description: 'Prestations de conseil en informatique',
+    orderReference: 'CMD-2025-001',
     status: 'approved',
-    createdAt: '2024-01-10T08:00:00Z',
-    submittedAt: '2024-01-10T17:00:00Z',
-    approvedAt: '2024-01-12T10:30:00Z',
-    expenses: [
-      {
-        id: '4',
-        category: expenseCategories[1],
-        description: 'Hôtel 2 nuits',
-        amount: 280.00,
-        currency: 'EUR',
-        date: '2024-01-10',
-        location: 'Lyon',
-        receipt: mockReceipts[1],
-        ocrData: mockOCRData[1]
-      },
-      {
-        id: '5',
-        category: expenseCategories[0],
-        description: 'Train Lyon A/R',
-        amount: 198.30,
-        currency: 'EUR',
-        date: '2024-01-10',
-        location: 'Lyon',
-        receipt: {
-          id: '5',
-          fileName: 'train_lyon.pdf',
-          fileType: 'application/pdf',
-          fileSize: 189000,
-          uploadedAt: '2024-01-10T08:30:00Z',
-          fileUrl: 'https://example.com/receipts/train_lyon.pdf',
-          thumbnailUrl: 'https://images.pexels.com/photos/4386321/pexels-photo-4386321.jpeg?auto=compress&cs=tinysrgb&w=400',
-          ocrStatus: 'completed',
-          ocrData: {
-            merchantName: 'SNCF Connect',
-            date: '2024-01-10',
-            amount: 198.30,
-            currency: 'EUR',
-            category: 'Transport',
-            confidence: 0.93,
-            extractedText: 'SNCF CONNECT\nParis - Lyon A/R\n10/01/2024\nMontant: 198,30 EUR'
-          }
-        }
-      },
-      {
-        id: '6',
-        category: expenseCategories[2],
-        description: 'Repas salon',
-        amount: 64.00,
-        currency: 'EUR',
-        date: '2024-01-11',
-        location: 'Lyon',
-        receipt: {
-          id: '6',
-          fileName: 'repas_salon_lyon.jpg',
-          fileType: 'image/jpeg',
-          fileSize: 678000,
-          uploadedAt: '2024-01-11T20:00:00Z',
-          fileUrl: 'https://example.com/receipts/repas_salon_lyon.jpg',
-          thumbnailUrl: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=400',
-          ocrStatus: 'completed',
-          ocrData: {
-            merchantName: 'Restaurant du Salon',
-            date: '2024-01-11',
-            amount: 64.00,
-            currency: 'EUR',
-            category: 'Repas',
-            confidence: 0.90,
-            extractedText: 'RESTAURANT DU SALON\nDîner\n11/01/2024\nMontant: 64,00 EUR'
-          }
-        }
-      }
-    ],
-    receipts: [mockReceipts[1]],
-    approvals: [
+    paymentStatus: 'scheduled',
+    documents: [mockDocuments[0]],
+    validations: [
       {
         id: '1',
         userId: '2',
-        userName: 'Pierre Martin',
+        userName: 'Pierre Durand',
         role: 'Manager',
+        action: 'validated',
+        comment: 'Prestation conforme à la commande',
+        timestamp: '2025-01-16T10:30:00Z',
+        level: 1
+      },
+      {
+        id: '2',
+        userId: '1',
+        userName: 'Sophie Martin',
+        role: 'Finance',
         action: 'approved',
-        comment: 'Dépenses conformes au salon professionnel',
-        timestamp: '2024-01-12T10:30:00Z'
+        comment: 'Validation comptable OK',
+        timestamp: '2025-01-17T14:15:00Z',
+        level: 2
       }
     ],
-    comments: []
-  }
-];
-
-export const budgets: Budget[] = [
-  {
-    category: 'Transport',
-    allocated: 2000,
-    spent: 1450,
-    remaining: 550,
-    period: 'monthly'
+    comments: [],
+    ocrData: mockOCRData[0],
+    createdAt: '2025-01-15T09:15:00Z',
+    updatedAt: '2025-01-17T14:15:00Z'
   },
   {
-    category: 'Hébergement',
-    allocated: 1500,
-    spent: 890,
-    remaining: 610,
-    period: 'monthly'
+    id: '2',
+    number: 'XYZ-2025-0042',
+    supplierId: '2',
+    supplierName: 'XYZ Technologies SAS',
+    amount: 6500.00,
+    amountTTC: 7800.00,
+    currency: 'EUR',
+    issueDate: '2025-01-10',
+    dueDate: '2025-02-24',
+    receivedDate: '2025-01-10',
+    description: 'Licence logiciel et maintenance annuelle',
+    orderReference: 'CMD-2025-002',
+    status: 'validated',
+    paymentStatus: 'pending',
+    documents: [mockDocuments[1]],
+    validations: [
+      {
+        id: '3',
+        userId: '3',
+        userName: 'Marc Lefevre',
+        role: 'Manager',
+        action: 'validated',
+        comment: 'Licence conforme au contrat',
+        timestamp: '2025-01-11T16:45:00Z',
+        level: 1
+      }
+    ],
+    comments: [],
+    ocrData: mockOCRData[1],
+    createdAt: '2025-01-10T14:30:00Z',
+    updatedAt: '2025-01-11T16:45:00Z'
   },
   {
-    category: 'Repas',
-    allocated: 800,
-    spent: 624,
-    remaining: 176,
-    period: 'monthly'
+    id: '3',
+    number: 'DEF-2025-001',
+    supplierId: '3',
+    supplierName: 'DEF Services EURL',
+    amount: 1000.00,
+    amountTTC: 1200.00,
+    currency: 'EUR',
+    issueDate: '2025-01-20',
+    dueDate: '2025-02-19',
+    receivedDate: '2025-01-20',
+    description: 'Services de nettoyage - Janvier 2025',
+    status: 'received',
+    paymentStatus: 'pending',
+    documents: [],
+    validations: [],
+    comments: [],
+    createdAt: '2025-01-20T08:00:00Z',
+    updatedAt: '2025-01-20T08:00:00Z'
   },
   {
-    category: 'Fournitures',
-    allocated: 600,
-    spent: 287,
-    remaining: 313,
-    period: 'monthly'
+    id: '4',
+    number: 'ABC-2025-002',
+    supplierId: '1',
+    supplierName: 'ABC SARL',
+    amount: 4166.67,
+    amountTTC: 5000.00,
+    currency: 'EUR',
+    issueDate: '2025-01-05',
+    dueDate: '2025-01-25',
+    receivedDate: '2025-01-05',
+    description: 'Développement application mobile',
+    status: 'paid',
+    paymentStatus: 'paid',
+    documents: [],
+    validations: [
+      {
+        id: '4',
+        userId: '2',
+        userName: 'Pierre Durand',
+        role: 'Manager',
+        action: 'validated',
+        timestamp: '2025-01-06T09:00:00Z',
+        level: 1
+      },
+      {
+        id: '5',
+        userId: '1',
+        userName: 'Sophie Martin',
+        role: 'Finance',
+        action: 'approved',
+        timestamp: '2025-01-07T11:30:00Z',
+        level: 2
+      }
+    ],
+    comments: [],
+    paymentDate: '2025-01-22',
+    paymentReference: 'VIR-2025-001',
+    createdAt: '2025-01-05T10:00:00Z',
+    updatedAt: '2025-01-22T15:30:00Z'
   }
 ];
 
 export const dashboardStats: DashboardStats = {
-  totalExpenses: 995.79,
-  pendingApprovals: 3,
-  monthlySpent: 2851.43,
-  averageProcessingTime: 2.4,
-  budgetUtilization: 68.5
+  totalInvoices: 156,
+  pendingValidation: 8,
+  pendingPayment: 12,
+  totalAmount: 245780.50,
+  overdueInvoices: 3,
+  averageProcessingTime: 3.2,
+  monthlyVolume: 45,
+  supplierCount: 28
 };
 
 export const notifications: NotificationItem[] = [
   {
     id: '1',
-    type: 'approval_request',
-    title: 'Nouvelle note de frais',
-    message: 'Jean Dupont a soumis une note de frais de 234,50€',
-    timestamp: '2024-01-16T10:30:00Z',
+    type: 'validation_required',
+    title: 'Nouvelle facture à valider',
+    message: 'DEF Services EURL - Facture DEF-2025-001 (1 200,00€) en attente de validation',
+    timestamp: '2025-01-20T08:15:00Z',
     read: false,
-    actionUrl: '/expenses/4'
+    actionUrl: '/invoices/3',
+    priority: 'medium'
   },
   {
     id: '2',
-    type: 'ocr_completed',
-    title: 'Extraction terminée',
-    message: 'Les données de votre facture SNCF ont été extraites automatiquement',
-    timestamp: '2024-01-15T16:45:00Z',
+    type: 'payment_due',
+    title: 'Échéance de paiement',
+    message: 'ABC SARL - Facture F2025001 arrive à échéance le 14/02/2025',
+    timestamp: '2025-01-19T09:00:00Z',
     read: false,
-    actionUrl: '/expenses/1'
+    actionUrl: '/invoices/1',
+    priority: 'high'
   },
   {
     id: '3',
-    type: 'expense_approved',
-    title: 'Note approuvée',
-    message: 'Votre note "Mission client Paris" a été approuvée',
-    timestamp: '2024-01-15T16:45:00Z',
-    read: false,
-    actionUrl: '/expenses/1'
+    type: 'invoice_received',
+    title: 'Nouvelle facture reçue',
+    message: 'XYZ Technologies SAS a déposé une nouvelle facture (7 800,00€)',
+    timestamp: '2025-01-10T14:30:00Z',
+    read: true,
+    actionUrl: '/invoices/2',
+    priority: 'low'
   },
   {
     id: '4',
-    type: 'payment_processed',
-    title: 'Remboursement effectué',
-    message: 'Remboursement de 165,99€ traité avec succès',
-    timestamp: '2024-01-10T14:20:00Z',
+    type: 'payment_executed',
+    title: 'Paiement effectué',
+    message: 'Paiement de 5 000,00€ à ABC SARL exécuté avec succès',
+    timestamp: '2025-01-22T15:30:00Z',
     read: true,
-    actionUrl: '/expenses/3'
+    actionUrl: '/payments',
+    priority: 'low'
   }
 ];
